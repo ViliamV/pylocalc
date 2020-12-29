@@ -1,0 +1,25 @@
+alias fix='poetry run isort . && poetry run black pylocalc/*.py'
+alias lint='poetry run mypy pylocalc'
+git config core.hooksPath .githooks
+function bump() {
+  # Go to project root
+  cd $(git rev-parse --show-toplevel)
+  # Verify clean directory
+  [[ -n $(git status --porcelain) ]] && return 1
+  versions=($(poetry version $1))
+  [[ ${#versions[@]} -ne 6 ]] && return 1
+  from_version=${versions[3]}
+  to_version=${versions[5]}
+  read -n 1 -p "Bump version ${from_version} -> ${to_version}? [Y/n]: "
+  [[ $REPLY =~ n|N ]] && return 1
+  echo "__version__ = \"${to_version}\"" >| tile/__version__.py
+  git add tile/__version__.py
+  sed -i "3s/${from_version}/${to_version}/" pyproject.toml
+  git add pyproject.toml
+  git commit -m "Bump version to ${to_version}"
+  git push
+  git tag "v${to_version}"
+  git push --tags
+}
+complete -W "patch minor major prepatch preminor premajor prerelease" bump
+# vim: ft=bash

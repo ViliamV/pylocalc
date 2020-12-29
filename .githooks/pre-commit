@@ -1,0 +1,13 @@
+#!/bin/bash
+# Go to project root
+cd $(git rev-parse --show-toplevel)
+echo "${BLUE}${BOLD}mypy${OFF}"
+poetry run mypy pylocalc || exit 1
+echo "${BLUE}${BOLD}isort${OFF}"
+poetry run isort .
+echo "${BLUE}${BOLD}black${OFF}"
+poetry run black pylocalc/*.py 
+# Add formatted files
+git add -u
+echo "${GREEN}${BOLD}Done${OFF}"
+exit 0
