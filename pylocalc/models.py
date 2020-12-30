@@ -2,6 +2,7 @@ import subprocess
 import time
 
 from contextlib import AbstractContextManager
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, Optional, Tuple, TypeVar, Union, cast
 
@@ -53,6 +54,8 @@ class Cell(BaseObject):
     def value(self, value: Any) -> None:
         if isinstance(value, (int, float)):
             self._uno_obj.Value = value
+        elif isinstance(value, Decimal):
+            self._uno_obj.Value = float(value)
         else:
             self._uno_obj.String = str(value)
 
