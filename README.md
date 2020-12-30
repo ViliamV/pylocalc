@@ -1,4 +1,8 @@
 # PyLOcalc
+[![forthebadge](https://forthebadge.com/images/badges/0-percent-optimized.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/you-didnt-ask-for-this.svg)](https://forthebadge.com)
+
 Python interface for manipulating LibreOffice Calc spreadsheets
 
 **DISCLAIMER: This is not production software! Backup your document before trying it!**
@@ -60,7 +64,9 @@ PyLOcalc can append row and column values to the first available row or column.
 It looks at the cell at the `offset` (default 0) and if the cell is empty it adds values there.
 
 ```python
+import decimal
 import pylocalc
+
 doc = pylocalc.Document('path/to/calc/spreadsheet.ods')
 doc.connect()
 sheet = doc['Totals']
@@ -68,6 +74,9 @@ sheet = doc['Totals']
 sheet.append_row(('2021-01-01', 123, 12.3, decimal.Decimal("0.111"), 'Yaaay'), offset=1)
 
 sheet.append_column(('New column header'))
+
+doc.save()
+doc.close()
 ```
 
 ## Context manager
