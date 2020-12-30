@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pylocalc"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python interface for manipulating LibreOffice Calc spreadsheets"
 authors = ["Viliam Valent <pylocalc@viliamvalent.com>"]
 license = "MIT"
