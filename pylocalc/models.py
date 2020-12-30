@@ -116,16 +116,17 @@ class Sheet(BaseObject):
 
 
 class Document(BaseObject, AbstractContextManager):
-    def __init__(self, path: Union[str, Path], port: int = 2002) -> None:
+    def __init__(self, path: Union[str, Path], port: int = 2002, host: str = "localhost") -> None:
         self.connected = False
         self._process: Optional[subprocess.Popen] = None
         self._path = path
         self._port = port
+        self._host = host
         super().__init__(None)
 
     def connect(self, max_tries: int = 10) -> None:
         self._process = subprocess.Popen(
-            f'soffice --headless --accept="socket,host=localhost,port={self._port};'
+            f'soffice --headless --accept="socket,host={self._host},port={self._port};'
             f'urp;StarOffice.ServiceManager" "{self._path}"',
             shell=True,
         )
@@ -136,7 +137,7 @@ class Document(BaseObject, AbstractContextManager):
                     "com.sun.star.bridge.UnoUrlResolver", local_context
                 )
                 context = resolver.resolve(
-                    f"uno:socket,host=localhost,port={self._port};urp;StarOffice.ComponentContext"
+                    f"uno:socket,host={self._host},port={self._port};urp;StarOffice.ComponentContext"
                 )
                 manager = context.ServiceManager
                 desktop = manager.createInstanceWithContext("com.sun.star.frame.Desktop", context)
