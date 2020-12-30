@@ -126,7 +126,7 @@ class Document(BaseObject, AbstractContextManager):
     def connect(self, max_tries: int = 10) -> None:
         self._process = subprocess.Popen(
             f'soffice --headless --accept="socket,host=localhost,port={self._port};'
-            f'urp;StarOffice.ServiceManager" {self._path}',
+            f'urp;StarOffice.ServiceManager" "{self._path}"',
             shell=True,
         )
         for _ in range(max_tries):
