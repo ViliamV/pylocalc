@@ -121,6 +121,7 @@ class Document(BaseObject, AbstractContextManager):
         self._process: Optional[subprocess.Popen] = None
         self._path = path
         self._port = port
+        super().__init__(None)
 
     def connect(self, max_tries: int = 10) -> None:
         self._process = subprocess.Popen(
@@ -196,7 +197,9 @@ class Document(BaseObject, AbstractContextManager):
 
     @property
     def name(self) -> str:
-        return str(self._uno_obj.Title)
+        if self._uno_obj is not None:
+            return str(self._uno_obj.Title)
+        return str(self._path)
 
     @property
     def sheet_names(self) -> Tuple[str, ...]:
