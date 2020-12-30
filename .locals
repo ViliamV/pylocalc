@@ -14,7 +14,7 @@ function bump() {
   git push
   git tag "v${new_version}"
   git push --tags
+  poetry publish --build
 }
 complete -W "patch minor major prepatch preminor premajor prerelease" bump
-alias publish='poetry publish --build'
 # vim: ft=bash
