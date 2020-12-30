@@ -100,22 +100,48 @@ class Sheet(BaseObject):
         return self.get_cell(key)
 
     def append_row(self, values: Iterable[Any], offset: int = 0) -> None:
-        rows = self._uno_obj.getRows()
-        for row_index in range(rows.Count):
-            if self[offset, row_index].is_empty:
-                for col_index, value in enumerate(values):
-                    cell = self[col_index + offset, row_index]
-                    cell.value = value
-                break
+        empty_index = self.find_index("", column=offset, find_empty=True)
+        for col_index, value in enumerate(values):
+            cell = self[col_index + offset, empty_index]
+            cell.value = value
 
     def append_column(self, values: Iterable[Any], offset: int = 0) -> None:
-        columns = self._uno_obj.getColumns()
-        for col_index in range(columns.Count):
-            if self[col_index, offset].is_empty:
-                for row_index, value in enumerate(values):
-                    cell = self[col_index, row_index + offset]
-                    cell.value = value
-                break
+        empty_index = self.find_index("", row=offset, find_empty=True)
+        for row_index, value in enumerate(values):
+            cell = self[empty_index, row_index + offset]
+            cell.value = value
+
+    def find_index(
+        self,
+        value: str,
+        *,
+        row: Optional[int] = None,
+        column: Optional[int] = None,
+        max_index: Optional[int] = None,
+        find_empty: bool = False,
+    ) -> int:
+        """
+        Returns index of the first cell that contains `value` in either `row` or `column`.
+        :param value: value to search for
+        :param row: index of row to search in if not None
+        :param column: index of column to search in if not None
+        :param max_index: restrict search to this index
+        :param find_empty: ignore `value` and search for empty cell
+        """
+        if row is None and column is None:
+            raise IndexError("Both `row` and `column` cannot be `None`.")
+        if row is not None and column is not None:
+            raise IndexError("Both `row` and `column` cannot have values.")
+        matches = lambda cell: (cell.is_empty() if find_empty else cell.value == value)
+        fixed_index = row or column
+        count = int(self._uno_obj.Columns.Count) if row is not None else int(self._uno_obj.Rows.Count)
+        max_index = min(count, max_index or count)
+        for index in range(max_index):
+            if (row is not None and self[index, row].value == value) or (
+                column is not None and self[column, index].value == value
+            ):
+                return index
+        return -1
 
 
 class Document(BaseObject, AbstractContextManager):
@@ -153,7 +179,10 @@ class Document(BaseObject, AbstractContextManager):
             finally:
                 time.sleep(1)
         else:
-            raise ConnectionError(f"Failed to connect to the document {self._path}")
+            raise ConnectionError(
+                f"Failed to connect to the document {self._path}\n"
+                "Try to run `ps ax | grep 'soffice --headless'` and kill the running process."
+            )
 
     @only_connected
     def save(self) -> None:
