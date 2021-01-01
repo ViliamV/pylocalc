@@ -20,9 +20,9 @@ def only_connected(function: Callable[..., T]) -> Callable[..., T]:
     only allows function call when Document is connected.
     """
 
-    def wrapped(self: "Document", *args: Any, **kwargs: Any) -> T:
-        if self.connected:
-            return function(self, *args, **kwargs)
+    def wrapped(document: "Document", *args: Any, **kwargs: Any) -> T:
+        if document.connected:
+            return function(document, *args, **kwargs)
         raise ConnectionError('Call "connect" on this instance.')
 
     return wrapped
@@ -48,6 +48,7 @@ class BaseObject:
 class Cell(BaseObject):
     @property
     def value(self) -> str:
+        """ Value of the cell. """
         return str(self._uno_obj.String)
 
     @value.setter
@@ -61,10 +62,12 @@ class Cell(BaseObject):
 
     @property
     def row_index(self) -> int:
+        """ Zero-based row index of the cell. """
         return int(self._uno_obj.RangeAddress.StartRow)
 
     @property
     def column_index(self) -> int:
+        """ Zero-based column index of the cell. """
         return int(self._uno_obj.RangeAddress.StartColumn)
 
     @property
@@ -117,15 +120,19 @@ class Sheet(BaseObject):
         *,
         row: Optional[int] = None,
         column: Optional[int] = None,
-        max_index: Optional[int] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
         find_empty: bool = False,
     ) -> int:
         """
-        Returns index of the first cell that contains `value` in either `row` or `column`.
+        Return zero-based index of the first cell whose value is equal to `value` in either `row` or `column`.
+        Raises a ValueError if there is no such cell.
+        The returned index is computed relative to the beginning of the row or column rather than the `start` argument.
         :param value: value to search for
         :param row: index of row to search in if not None
         :param column: index of column to search in if not None
-        :param max_index: restrict search to this index
+        :param start: restrict search to start from this index (inclusive)
+        :param end: restrict search to end at this index (exclusive)
         :param find_empty: ignore `value` and search for empty cell
         """
         if row is None and column is None:
@@ -135,13 +142,14 @@ class Sheet(BaseObject):
         matches = lambda cell: (cell.is_empty() if find_empty else cell.value == value)
         fixed_index = row or column
         count = int(self._uno_obj.Columns.Count) if row is not None else int(self._uno_obj.Rows.Count)
-        max_index = min(count, max_index or count)
-        for index in range(max_index):
+        min_index = max(0, start or 0)
+        max_index = min(count, end or count)
+        for index in range(min_index, max_index):
             if (row is not None and self[index, row].value == value) or (
                 column is not None and self[column, index].value == value
             ):
                 return index
-        return -1
+        raise ValueError("Not found.")
 
 
 class Document(BaseObject, AbstractContextManager):
