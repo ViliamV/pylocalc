@@ -73,7 +73,7 @@ sheet = doc['Totals']
 
 sheet.append_row(('2021-01-01', 123, 12.3, decimal.Decimal("0.111"), 'Yaaay'), offset=1)
 
-sheet.append_column(('New column header'))
+sheet.append_column(('New column header', ))
 
 doc.save()
 doc.close()
