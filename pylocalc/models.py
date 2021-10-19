@@ -9,12 +9,10 @@ from typing import Any, Callable, Iterable, Iterator, Optional, Tuple, TypeVar, 
 import uno
 
 
-__all__ = ["Cell", "Sheet", "Document"]
-
 T = TypeVar("T")
 
 
-def only_connected(function: Callable[..., T]) -> Callable[..., T]:
+def _only_connected(function: Callable[..., T]) -> Callable[..., T]:
     """
     Helper decorator for Document class that
     only allows function call when Document is connected.
@@ -167,6 +165,7 @@ class Document(BaseObject, AbstractContextManager):
             f'urp;StarOffice.ServiceManager" "{self._path}"',
             shell=True,
         )
+        last_error = None
         for _ in range(max_tries):
             try:
                 local_context = uno.getComponentContext()
@@ -182,28 +181,27 @@ class Document(BaseObject, AbstractContextManager):
                 if self._uno_obj is not None:
                     self.connected = True
                     break
-            except:
-                pass
-            finally:
+            except Exception as e:
+                last_error = e
                 time.sleep(1)
         else:
             raise ConnectionError(
                 f"Failed to connect to the document {self._path}\n"
                 "Try to run `ps ax | grep 'soffice --headless'` and kill the running process."
-            )
+            ) from last_error
 
-    @only_connected
+    @_only_connected
     def save(self) -> None:
         self._uno_obj.store()
 
-    @only_connected
+    @_only_connected
     def close(self) -> None:
         self._uno_obj.close(0)
         if self._process is not None:
             self._process.terminate()
             self._process.wait()
 
-    @only_connected
+    @_only_connected
     def get_sheet(self, sheet_id: Union[str, int]) -> "Sheet":
         """ Get sheet by index or name """
         try:
@@ -215,7 +213,7 @@ class Document(BaseObject, AbstractContextManager):
             raise IndexError(f'"{sheet_id}" not found')
         raise NotImplementedError(f"Key of type {type(sheet_id)} is not supported.")
 
-    @only_connected
+    @_only_connected
     def __iter__(self) -> Iterator["Sheet"]:
         iterator = self._uno_obj.Sheets.createEnumeration()
         while True:

@@ -1,4 +1,5 @@
 # PyLOcalc
+
 [![forthebadge](https://forthebadge.com/images/badges/0-percent-optimized.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com)
 [![forthebadge](https://forthebadge.com/images/badges/you-didnt-ask-for-this.svg)](https://forthebadge.com)
@@ -8,9 +9,10 @@ Python interface for manipulating LibreOffice Calc spreadsheets
 **DISCLAIMER: This is not production software! Backup your document before trying it!**
 
 ## About
+
 LibreOffice/OpenOffice has API for many languages including Python, thanks to the Universal Network Objects (UNO).
 
-*But its API is all but [Pythonic](https://docs.python.org/3/glossary.html)!*
+_But its API is all but [Pythonic](https://docs.python.org/3/glossary.html)!_
 
 I took inspiration from [this article](https://christopher5106.github.io/office/2015/12/06/openoffice-libreoffice-automate-your-office-tasks-with-python-macros.html)
 and created simple wrapper around this API.
@@ -18,12 +20,24 @@ and created simple wrapper around this API.
 PyLOcalc also automatically opens a headless LibreOffice Calc document with basic read, write, and save functionality.
 Therefore, it can be used as a library for other scripts that manipulate spreadsheets.
 
+## Requirements
+
+1. **python>=3.8**
+2. You have to have LibreOffice with "python support" installed.
+   In Ubuntu it's (apparently) `sudo apt install libreoffice-script-provider-python`,
+   in Arch Linux I didn't have to do anything.
+
+   You can try running `python -m uno` and it should not produce any output or error.
+3. Macro security - Medium. Follow [this article](https://christopher5106.github.io/office/2015/12/06/openoffice-libreoffice-automate-your-office-tasks-with-python-macros.html).
+
 ## Installation
+
 ```bash
 pip install pylocalc
 ```
 
 ## Basic usage
+
 ```python
 import pylocalc
 

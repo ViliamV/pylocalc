@@ -1,1 +1,1 @@
-from pylocalc.models import *
+from pylocalc.models import Document
